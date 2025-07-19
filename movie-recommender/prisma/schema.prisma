@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique
+  name      String?
+  createdAt DateTime    @default(now())
+  watchlist Watchlist[]
+}
+
+model Movie {
+  id          Int        @id @default(autoincrement())
+  tmdbId      Int        @unique
+  title       String
+  overview    String?
+  releaseDate DateTime?
+  posterPath  String?
+  releaseYear Int
+  rating      Float?
+  genres      Genre[]    // implicit many-to-many
+  watchlist   Watchlist[]
+}
+
+model Genre {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  movies Movie[]  // implicit many-to-many
+}
+
+model Watchlist {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  movieId   Int
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, movieId]) // Prevent duplicate entries
+}
